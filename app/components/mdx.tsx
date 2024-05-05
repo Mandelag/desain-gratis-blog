@@ -7,6 +7,7 @@ import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 import Markdown from "react-markdown";
+import supersub from "remark-supersub";
 
 const tableStyles = `
     table {
@@ -135,7 +136,7 @@ export function CustomMDX(props) {
       <style>{tableStyles}</style>
       <Markdown
         rehypePlugins={[rehypeKatex]}
-        remarkPlugins={[remarkMath, remarkGfm]}
+        remarkPlugins={[remarkMath, remarkGfm, supersub]}
         components={{ ...components, ...(props.components || {}) }}
       >
         {props.source}

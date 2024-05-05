@@ -66,7 +66,7 @@ Using tail latency, we can say:
 |   $$0.9995$$ |      $$2000$$ |
 |   $$0.9999$$ |     $$10000$$ |
 
-_**Table 1** What is the probability of our service having ≤ x ms latency? The table helps you answer that question._
+_***Table 1*** What is the probability of our service having ≤ x ms latency? The table helps you answer that question._
 
 What is the probability of our service having $$≤ x$$ ms latency? The table helps you answer that question.
 
@@ -78,10 +78,12 @@ In summary, describing a service latency with a single value is not sufficient t
 
 Let's apply our new knowledge to day to day software engineering. Mind you, that the examples I present are oversimplification. They are still useful, however. I will present three of them:
 
-Justifying a service infrastructure cost
-Database benchmarking
-Upstream service integration
-Justifying a service infrastructure cost
+- Justifying a service infrastructure cost
+- Database benchmarking
+- Upstream service integration
+
+#### Justifying a service infrastructure cost
+
 Imagine, you are responsible for the recommendation system in a homepage of a hypothetical online store.
 
 The online store has a daily average of 100 K views in an hour. From the 100 K views, 60 K (60%) of them clicked your recommendations, and 6 of them (0.01%) converted to actual user purchase with an average total transaction value of USD 360 or USD 60 for each user.
@@ -96,7 +98,7 @@ Since you're an advocate of probabilistic tail latency measurement, you have thi
 |   $$0.9995$$ |       $$8000$$ |
 |   $$0.9999$$ |      $$16000$$ |
 
-_**Table 2** Latency measurement of our recommendation system_
+_***Table 2*** Latency measurement of our recommendation system_
 
 By using the percentiles description above, we knew: From 100 K views in that hour, 5% of views (5 K) experienced latency higher than 2000 ms.
 
@@ -104,7 +106,7 @@ We can then do some simple modeling based on the above measurement.
 
 Let's assume latency has a negative correlation with the number of views. The higher the latency, the lower the number of views. Let's further assume if the recommendation takes 2 seconds to load, users will lose patience and bounce out of the homepage (or visit anything else).
 
-This is a reasonable assumption considering supporting research evidence [2][3].
+This is a reasonable assumption considering supporting research evidence ^[2][3]^.
 
 Using this assumption, we are actually missing 5 K views an hour.
 
@@ -120,36 +122,42 @@ If the horizontal/vertical upscale cost is less than USD 18.00 / hours, it might
 
 The opposite also applies: if we're able to identify which part of code caused the high latency and resolves that, we can save USD 18.00 / hours.
 
-Database benchmarking
+#### Database benchmarking
+
 Suppose you are required to design a service that is expected to receive 10 K RPS with a workload that requires a database. You are interested to know which databases are the most cost efficient.
 
 Fortunately, a third party already benchmarked those DBs fairly with the same workload that we have. They have the tail latency measurement ready.
 
-P(X ≤ x) DB A (ms) DB B (ms)
-0.5 5 5
-0.95 8 11
-0.99 10 12
-0.9995 20 13
-0.9999 100 15
-Table 3 Tail latency DB A vs DB B
+| $$P(X ≤ x)$$ | DB A (ms) | DB B (ms) |
+| -----------: | --------: | --------: |
+|      $$0.5$$ |     $$5$$ |     $$5$$ |
+|     $$0.95$$ |     $$8$$ |    $$11$$ |
+|     $$0.99$$ |    $$10$$ |    $$12$$ |
+|   $$0.9995$$ |    $$20$$ |    $$13$$ |
+|   $$0.9999$$ |   $$100$$ |    $$15$$ |
+
+_***Table*** 3 Tail latency DB A vs DB B_
 
 Which database will you choose, and why ..?
 
 Another results might be:
 
-P(X ≤ x) DB A (ms) DB B (ms)
-0.5 5 5
-0.95 8 9
-0.99 15 15
-0.9995 20 13
-0.9999 20 21
-Table 4 Tail latency DB A vs DB B
+|   P(X ≤ x) | DB A (ms) | DB B (ms) |
+| ---------: | --------: | --------: |
+|    $$0.5$$ |     $$5$$ |     $$5$$ |
+|   $$0.95$$ |     $$8$$ |     $$9$$ |
+|   $$0.99$$ |    $$15$$ |    $$15$$ |
+| $$0.9995$$ |    $$20$$ |    $$13$$ |
+| $$0.9999$$ |    $$20$$ |    $$21$$ |
+
+_***Table 4*** Tail latency DB A vs DB B_
 
 For the same amount of workload, DB A have 20% CPU utilization, 50% memory usage and a higher throughput, while DB B have 90% CPU utilization, 95% memory usage and a lower throughput.
 
 Which database will you choose, and why ..?
 
-Upstream service integration
+#### Upstream service integration
+
 Suppose you are an owner of a Software as a Service (SaaS) platform with daily average traffic of 1000 requests per second (RPS). You have a strict upper bound of 100 ms 99.999% of the time. If you break this, you are breaking an agreement you've made with your users. Your company then will be forced to give impacted users costly compensations.
 
 Yes. It is a Service Level Agreement (SLA). Let's discuss them in another blog post.
@@ -158,69 +166,79 @@ As part of feature development requirement, you're required to hit an upstream s
 
 Here is your service tail latency:
 
-P(X ≤ x) x
-0.5 5
-0.95 8
-0.99 15
-0.9995 20
-0.9999 60
-Table 5 Your service latency
+| $$P(X ≤ x)$$ | x (ms) |
+| -----------: | -----: |
+|      $$0.5$$ |  $$5$$ |
+|     $$0.95$$ |  $$8$$ |
+|     $$0.99$$ | $$15$$ |
+|   $$0.9995$$ | $$20$$ |
+|   $$0.9999$$ | $$60$$ |
+
+_***Table 5*** Your service latency_
 
 And here is the new upstream service tail latency that you need to connect with for every request:
 
-P(X ≤ x) x
-0.5 50
-0.95 90
-0.99 150
-0.9995 200
-0.9999 2000
-Table 6 Example Upstream Service
+| $$P(X ≤ x)$$ |   x (ms) |
+| -----------: | -------: |
+|      $$0.5$$ |   $$50$$ |
+|     $$0.95$$ |   $$90$$ |
+|     $$0.99$$ |  $$150$$ |
+|   $$0.9995$$ |  $$200$$ |
+|   $$0.9999$$ | $$2000$$ |
+
+_***Table 6*** Example Upstream Service_
 
 Do you know whether the upstream service is able to serve your service without breaking the SLA? Do you need to develop a caching mechanism ..?
 
-Now, you cannot just add the tail latency without introducing any error as this paper suggests [4]. Addition are correct when you're adding the lower bound (min), upper bound (max), and median (when P(X ≤ x) = 0.5)
+Now, you cannot just add the tail latency without introducing any error as this paper suggests ^[4]^. Addition are correct when you're adding the lower bound (min), upper bound (max), and median (when $$P(X ≤ x) = 0.5$$)
 
 So you can answer that 50% of the time, your latency will be the median of your service latency + the median of the upstream service latency. The same you can get for the upper bound.
 
 Another example would be like this,
 
-P(X ≤ x) x
-0.5 5
-0.95 8
-0.99 12
-0.9995 20
-0.9999 25
-Table 7 Upstream Latency
+| $$P(X ≤ x)$$ | x (ms) |
+| -----------: | -----: |
+|      $$0.5$$ |  $$5$$ |
+|     $$0.95$$ |  $$8$$ |
+|     $$0.99$$ | $$12$$ |
+|   $$0.9995$$ | $$20$$ |
+|   $$0.9999$$ | $$25$$ |
+
+_***Table 7*** Upstream Latency_
 
 But the measurement is taken when the upstream service is at 100 RPS.
 
 Should you be worried ..?
 
+---
+
 I hope all three examples convey how probability can help you make better everyday engineering decisions, especially one related to cost. I deliberately left out some answers so you can come up with your own solution.
 
-Exercise
-Given the following GRPC Benchmark results of various libraries/frameworks, can you determine which one of them is the most cost efficient? (highest throughput relative to the resource usage)
+#### Exercise
 
-Measuring Service Latency
-Imagine having a set of real numbers S containing an infinite amount of members. Each member is your service latency measurement.
+1. Given the following [GRPC benchmark results]("https://github.com/LesnyRumcajs/grpc_bench/wiki/2022-04-23-bench-results") of various libraries/frameworks, can you determine which one of them is the most cost efficient? (highest throughput relative to the resource usage)
+
+#### Measuring Service Latency
+
+Imagine having a set of real numbers $$S$$ containing an infinite amount of members. Each member is your service latency measurement.
 
 You sort the members with latency measurement values from lowest to highest.
 
-At the center—where the set is divided into two, you have `x` that satisfies
+At the center—where the set is divided into two, you have $$x$$ that satisfies
 
-```
+```math
 P(X ≤ x) = 0.5
 ```
 
-From zero to `3/4` of the length, you have `x` that satisfies
+From zero to $$3/4$$ of the length, you have $$x$$ that satisfies
 
-```
+```math
 P(X ≤ x) = 0.75
 ```
 
-At `99/100` of the length, you have `x` that satisfies
+At $$99/100$$ of the length, you have $x$ that satisfies
 
-```
+```math
 P(X ≤ x) = 0.99
 ```
 
@@ -228,7 +246,7 @@ Continue this to get the desired tail latencies. The result is your service's ac
 
 However, it is impossible nor practical to actually sort an infinite set. Instead, we use sampling.
 
-We take a subset of S , and then we do the same sorting process. We call this subset a sample. As long as the samples are representative, we can be more confident that it will represent the actual tail latency.
+We take a subset of $$S$$, and then we do the same sorting process. We call this subset a sample. As long as the samples are representative, we can be more confident that it will represent the actual tail latency.
 
 Now, taking representative sampling is a discipline on its own. In general, you need to understand what factors affect service latency, and then considering that, take large enough sample. What's considered enough may also vary.
 
@@ -238,7 +256,8 @@ For example, if you need to know the actual latency for the next big event, you 
 
 For latency measurement, you should not have any problem taking many measurements as you can just hit your service multiple times.
 
-A Little Exercise
+#### A Little Exercise
+
 Existing benchmarking tools such as Apache JMeter will help you perform more requests to make the sampling more representative.
 
 But for simple measurement, you can use the following command line scripts (I'm using Ubuntu).
@@ -272,9 +291,10 @@ And then sort the data.
 sort -k1n measurements.csv > measurements-sorted.csv
 ```
 
-From the 1000 lines of sorted measurements, you can graph them using Google Sheet. Assign each 1000 measurements and index from [0, 1] and you can obtain an estimate of your service's CDF .
+From the 1000 lines of sorted measurements, you can graph them using Google Sheet. Assign each 1000 measurements and index from `[0, 1]` and you can obtain an estimate of your service's CDF .
 
-My service latency
+#### My service latency
+
 From the chart above you can say that most of the time (~99.9%), your service is under 0.2 ms. Fast!
 
 The axis of the graph can be inverted to get a more "natural" look and highlight the increase in the "tail" latency. You can quickly look at this chart and "query" at which probability my service has which latency.
@@ -284,15 +304,15 @@ I personally love this.
 My service latency
 Some measurements of above charts:
 
-| P(X ≤ x) | x     |
-| -------- | ----- |
-| 0.5      | 0.067 |
-| 0.75     | 0.072 |
-| 0.99     | 0.23  |
-| 0.9995   | 1.12  |
-| 0.9999   | 1.14  |
+| $$P(X ≤ x)$$ |     x (ms) |
+| -----------: | ---------: |
+|      $$0.5$$ | $$ 0.067$$ |
+|     $$0.75$$ | $$ 0.072$$ |
+|     $$0.99$$ |  $$ 0.23$$ |
+|   $$0.9995$$ |   $$1.12$$ |
+|   $$0.9999$$ |   $$1.14$$ |
 
-Table 8 My Service tail latency
+_***Table 8*** My Service tail latency_
 
 Summary
 Service latency should be communicated using probability.
@@ -305,11 +325,12 @@ Describing latency using probability allows us to do some modeling & calculation
 
 Simple tools can be used to obtain an estimate of service latency probability from a sample measurement. You need to be mindful of how you take the sample and take the sample large enough to be representative.
 
-Recommended Reads
-[1] Applied Statistics and Probability for Engineers, 6th Edition. By By Douglas C. Montgomery, George C. Runger
+## Recommended Reads
 
-[2] WHAT IS LATENCY AND HOW MUCH IS IT COSTING YOU by Eric Arrington.
+^[1]^ Applied Statistics and Probability for Engineers, 6th Edition. By By Douglas C. Montgomery, George C. Runger
 
-[3] How Page Load Time Affects Bounce Rate and Page Views by Section.io
+^[2]^ WHAT IS LATENCY AND HOW MUCH IS IT COSTING YOU by Eric Arrington.
 
-[4] ADDING AND SUBTRACTING PERCENTILES - HOW BAD CAN IT BE?(1995) by John G. Kreifeldt, Keoun Nah
+^[3]^ How Page Load Time Affects Bounce Rate and Page Views by Section.io
+
+^[4]^ ADDING AND SUBTRACTING PERCENTILES - HOW BAD CAN IT BE?(1995) by John G. Kreifeldt, Keoun Nah
