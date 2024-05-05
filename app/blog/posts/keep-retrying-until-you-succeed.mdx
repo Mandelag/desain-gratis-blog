@@ -1,0 +1,109 @@
+---
+title: "Keep Retrying Until You Succeed"
+publishedAt: "2023-12-26"
+summary: "Use statistics to determine retry mechanism"
+---
+
+Not a motivational post. Just statistics.
+
+When developing a background processing data pipeline, one of my colleague [Daniel Agatan]("https://www.linkedin.com/in/daniel-agatan-b3978a1a9") asked the question:
+
+> “How many retries should we put when getting data from this upstream service–until at least we have one successful result?”
+
+How would you like to answer?
+
+For reliable upstream service, we can put “just enough” retry logic and expect everything works. But what if the upstream service is not so reliable?
+
+…
+
+The moment [Daniel Agatan]("https://www.linkedin.com/in/daniel-agatan-b3978a1a9") asked, I immediately knew the solution to this problem exists somewhere in statistics textbooks that I have read, but wasn’t able to recall them immediately.
+
+After some jottings on the whiteboard and a good night sleep, I found a way to frame (or approach) the problem the following day.
+
+We can frame the problem as a **_Binomial Trial_**, where:
+
+- The number of upstream service calls–the retries, represent the number of trials $$n$$.
+- The upstream service success rate represent the success probability $$p$$ of each trial.
+- We want to make sure the probability of at least one success $$x = 1, P( X ≥ x )$$ in the series of $$n$$ trials, is high enough for our requirements (eg. SLA).
+- Find the minimum $$n$$ that satisfies condition (3)
+- Assume that each retry is independent from one another.
+
+Let’s apply them in the following exercise, in the style of statistic textbook questions:
+
+> You are a software engineer in an e-commerce company in charge of building a new data pipeline.
+> The pipeline will be crucial to the business process, and your product management & business team already committed $$99.95$$% correctness **SLA** to your user, for each message processed in the pipeline.
+
+> The problem is, the pipeline's upstream service dependency–the one needed for correct pipeline result, is not reliable with known success rate of only $$60$$%.
+
+> How many retries should you put for the upstream service to make sure the pipeline is still correct $$99.95$$% of the time?
+
+> Assume that each upstream call is independent from each other. (You don’t send any malicious payload that crashes the upstream; and the upstream success rate are stable no matter how many RPS they got)
+
+**_Ans:_**
+
+The upstream success rate 60% means $$p = 0.6$$.
+
+The **SLA** stated that we should have the correct result $$99.95$$% of the time. Correct results depended on at least one success $$x = 1$$ in a sequence of $$n$$ retries.
+We’re looking for the minimum number of $$n$$ retries that satisfies
+
+$$x = 1, P( X ≥ x ) ≥ 0.9995$$. $$n$$ is an integer.
+
+To get our answer, we use the **Cumulative Distribution Function** (CDF) and/or the **Probability Density Function** (PDF).
+
+Fortunately, existing implementation of those functions exist in Python's `scipy.stats.binom` package.
+
+They don’t have any function for $$P( X ≥ 1 )$$, but they do have `scipy.stats.binom.pmf` to get $$P( X = x )$$, and `scipy.stats.binom.sf` to get $$P( X > x )$$, the inverse CDF that we can use.
+
+Since,
+
+$$P( X ≥ 1) = P( X = 1 ) + P( X > 1 )$$
+
+We found that a minimum of $$9$$ retries are required to make sure the correctness SLA is achieved.
+
+```python
+import scipy
+
+p = 0.6
+x = 1
+n = 3 # let's start with this number
+
+scipy.stats.binom.pmf(x, n, p) + scipy.stats.binom.sf(x, n, p)
+0.9359999999999999
+
+n = 10
+scipy.stats.binom.pmf(x, n, p) + scipy.stats.binom.sf(x, n, p)
+0.9998951424
+
+n = 6
+scipy.stats.binom.pmf(x, n, p) + scipy.stats.binom.sf(x, n, p)
+0.995904
+
+n = 8
+scipy.stats.binom.pmf(x, n, p) + scipy.stats.binom.sf(x, n, p)
+0.99934464
+
+n = 9
+scipy.stats.binom.pmf(x, n, p) + scipy.stats.binom.sf(x, n, p)
+0.999737856
+```
+
+For upstream that have high success rate (eg. 99.99%), one "try" already satisfies the SLA. Thus, the “Just Enough.”
+
+#### Thoughts
+
+The binomial trial, its distributions, are useful not only in system design but also in gaming, decision making, and other fields–given you knew the p and the assumptions involved.
+How many monsters should you defeat for $$90$$% chances to obtain an item with $$0.01$$% drop rate (a card, maybe)?
+
+Around $$23050$$ monsters.
+
+How many gachas should you take for $$99$$% chances to get that rare character with 5% item rate.
+
+Around $$90$$ gachas. If each gachas costs you \$10, then you know the expected money you should allocate for the character $900.
+
+It can be used to check whether a coin is fair or not (or biased).
+
+It allows you to know when to stop and when to keep on trying.
+
+It is nice, despite the day-to-day activities of software engineering, to be reminded of this concept, as a reminder that knowledge is valuable.
+
+Happy New Year & Merry Christmas everyone, Happy Holiday.
