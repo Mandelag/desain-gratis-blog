@@ -9,7 +9,7 @@ export default function Page() {
         Hi, I'm Keenan
       </h1>
       <p className="mb-4">
-        {`I'm a software engineer with more than 5 years of experience maintaining and developing e-commerce personalization systems and their data pipelines.`}
+        {`I'm a software engineer with more than 5 years of experience maintaining and developing e-commerce personalization systems and data pipelines.`}
       </p>
       <p className="mb-4">
         {`I'm an ex-solutions architect, having a broad knowledge of technologies and the know-how of applying them in your organization based on sound capacity planning.`}
