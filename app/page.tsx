@@ -19,7 +19,7 @@ export default function Page() {
       I have technical knowledge in the Geographic Information Systems (GIS) and statistics.`}
       </p>
       <br />
-      <div className="flex overflow-auto my-8">
+      <div className="flex overflow-auto my-8 align-middle h-24 items-center">
         <Certifications />
       </div>
       <br />
@@ -68,6 +68,13 @@ const Certifications = () => {
           width={75}
           height={75}
         />
+      </Link>
+      <Link
+        href="https://ieeexplore.ieee.org/document/8280674"
+        target="_blank"
+        className="flex-none w-24"
+      >
+        <Image src="/ieee-mb-blue.png" alt="IEEE" width={75} height={75} />
       </Link>
     </>
   );
