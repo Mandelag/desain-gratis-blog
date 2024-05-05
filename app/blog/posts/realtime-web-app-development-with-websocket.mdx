@@ -1,0 +1,187 @@
+---
+title: "Realtime Web App Development with WebSocket"
+publishedAt: "2024-04-23"
+summary: "An overview of developing websocket web application"
+---
+
+Hi, just as promised from my previous linkedin post. I'll post the WebSocket development article here.
+For those of you who just want to try the application, you can jump here: https://apps.desain.gratis/track.
+
+![image](/ws-demo.png)
+
+_***The application*** Each label (colored pink blue) represent user mouse position from different browser sessions_
+
+Else, for those of you who want to get the overview on how to build a real-time web application using WebSocket, you can continue.
+
+This article is divided into four parts:
+
+- The background
+- The logical architecture
+- Planning and development
+- Conclusion
+
+## The background
+
+WebSocket has always been in my front-end learning, "important but not urgent" backlog since forever. This because I prioritize learning on my work-related, back-end and data processing skills first.
+
+But since end-to-end, real-time application provides real value to users and are increasingly relevant, I decided to finally take the backlog. I took it in my free time during the last Eid holiday.
+
+So, with a strong desire "to create"...
+I will share on how the application came to be, and how I learn along the way.
+
+## The logical architecture
+
+![image](/ws-demo-logical-arch.png)
+
+_***This is what we want to create***. Very simple, client-server app._
+
+That's the application that we want to create. That's the end goal.
+
+We create
+
+1. web (browser) application client, and
+2. web socket server.
+
+Clients send user (or "session") activity data, retrieve update events from the server, update their internal state, and render the result back to users.
+
+Server retrieve user activity data from clients, perform business logic, and broadcast update to active clients.
+
+> "How we implement this simple diagram is up to you and what's relevant to your organization."
+
+For me, I choose the tech that I'm comfortable with, and one that I currently prioritize to learn and do research & development with. Which is then I translate into this diagram:
+
+![image](/ws-demo-logical-arch-with-tech-stack.png)
+
+_***Logical architecture***, with the tech stack mentioned_
+
+I'll explain each of them a bit.
+
+#### [Next.js](https://nextjs.org) / [Vercel.com](https://vercel.com)
+
+Provides easy and free (for hobbyist) web development experience. You just need to do "git push", and your Next.js website will be deployed. Very convenient, especially the application is inside my https://desain.gratis blog, which already uses it.
+I choose React over pure HTML + Javascript + CSS, since I'm learning React for more modern, scalable (in terms of knowledge and maintainability), mainstream web development.
+
+#### [Golang](https://go.dev)
+
+The application service, a http service, the WebSocket server. Our business logic, the broadcasting logic, we put them all here.
+I chose Golang because it's the language I am comfortable with, since it's the one that I use currently at work, and I want to be more proficient in this language.
+
+#### [NGINX](https://www.nginx.com) + [Let's Encrypt](https://letsencrypt.org/)
+
+I only have a single VM instance and a public IP, but have multiple HTTP services.
+To route incoming network request from the internet via the public IP to other services inside the VM I use NGINX. I also use this to manage incoming HTTPS connection, so that our server does not need to.
+
+```
+api.desain.gratis/usecase_1 --> service 1
+api.desain.gratis/usecase_2 --> service 2
+api.desain.gratis/...
+api.desain.gratis/usecase_n --> service n
+```
+
+I did not use Google Cloud Load Balancing (GCLB) because it is relatively expensive for my hobbyist budget. Almost twice the price of their cheapest VM 🥲 (but I used it later anyway).
+GCLB also cannot route to a single VM instance, it needs to be a VM instance group, or a GKE cluster, or an App Engine (which I plan to explore, but not yet).
+
+#### Hashicorp's [Nomad](https://www.nomadproject.io/)
+
+Simple service orchestration that supports running an executable file without making them into a container. I used this to run multiple services binary the single VM instance.
+
+```sh
+# simple binary to run, no Dockerfile
+
+go build -o output .
+./output
+```
+
+It's a bit overkill, but I use it nevertheless.
+
+They have a nice web administration UI so I can easily start and stop my services, without the need to SSH inside the VM.
+
+I checked alternatives such as Google Kubernetes Engine (GKE) or Google App Engine (GAE). Previously I decided to not use them, since they require GCLB (expensive.. 🥲), and also some learning curve to make them "proper".
+But I plan to explore GAE later, since now, I have a GCLB configured for another service for image upload / CDN use case.
+
+I do not use other cloud solutions such as AWS ECS since I am currently learning GCP. I can always apply transfer learning to other Cloud providers later.
+
+For learning purposes, I also tried it on Kraftcloud which is new but very promising (let's wait for their pricing strategies!).
+
+#### [Tailscale](https://tailscale.com/)
+
+Very easy to use VPN.
+I use it to access the Nomad Web UI using an internal domain assigned by Tailscale.
+
+As you can see, most of my tech stack decisions are based on subjective, highly contextual, personal (tech) value.
+
+## Planning and Development
+
+Before we do the actual coding, we need to prepare few things:
+
+1. capacity planning
+2. how the client-server communicates (contract, sub-protocol)
+3. understand their trade offs
+4. development
+
+## Capacity planning
+
+My use case is to track mouse hover events from Deck.GL library. The app will be "protected" with Google Sign In--only authenticated users are authorized to connect to our WebSocket server.
+
+I expect the client to send messages at a relatively high rate from a single user. The user growth itself will be relatively low since my blog is not popular (cries).
+Each client also needs to consume messages sent by other clients, broadcasted by the server. Back and forth, back and forth.
+
+It can be network (IO) intensive.
+
+Based on that, I choose to optimize network when defining the client-server contract (sub-protocol):
+
+- use byte-encoding to send mouse hover events (high message rate)
+- use UTF-8 encoding, in JSON format, for other event types such as (new) session entering, and session exit. (lower message rate)
+
+![image](/ws-demo-protocol.png)
+
+_***The protocol and message encoding*** Header code is the type of message. And session ID is the key for an in-memory storage, storing the current active connections and some user data_
+
+I will skip the SLA & Unit-Pricing for this article since they deserve to be treated in their own article. But it is useful to know that you can determine it at this step.
+
+### Trade-offs
+
+I believe there are no significant performance trade-offs.
+But, there will be code-maintainability vs performance trade-offs. Both server & client code needs to do non-out-of-the-box processing.
+
+```javascript
+// Javascript message parser
+
+// instead of JSON.parse(payload) you do 🥲:
+
+const buf = await event.data.arrayBuffer();
+const messageType = new Uint16Array(buf.slice(0, 2))[0];
+const _sourceId = new Uint32Array(buf.slice(2, 10));
+```
+
+&nbsp;
+
+```golang
+// Golang message parser
+
+// instead of standard json.Marshal / json.Unmarshal, you do 🥲:
+
+header := make([]byte, 10)
+binary.LittleEndian.PutUint64(header[2:], currentUserInfo.ID)
+binary.LittleEndian.PutUint16(header[:2], NOTIFY_CLIENT_UPDATE_COORDINATE)
+```
+
+A trade-offs that I gladly take.
+
+### Development
+
+Finally, we can proceed to do development. You can see the React code here.
+Please do forgive that it is not that organized:
+
+1. I tried to wrap WebSocket object in React component. Also,
+2. I need render the location updates outside of React render cycle, and it involves manipulating DOM directly.
+
+For the server part, it is pretty straight forward (the code soon).
+You will see how Golang language elegantly handles and manipulates IO❤️, it allows me to be confident in my code and be more productive. Of course I only compare it to other languages that I've experience with 😅 (Java, Python, C++, Javascript).
+
+## Conclusion
+
+I've presented you with a simple overview on how to build a real-time web application using WebSocket. It is still in a level of Proof of Concept (POC).
+We can then later improve it to make even better apps / games.
+
+Keep on learning.
