@@ -9,17 +9,25 @@ export default function Page() {
         Hi, I'm Keenan
       </h1>
       <p className="mb-4">
-        {`I'm a software engineer with more than 5 years of experience maintaining and developing e-commerce personalization systems and data pipelines.`}
+        I'm a software engineer with more than 5 years of experience maintaining
+        and developing personalization systems and data pipelines.
       </p>
+      <p className="mb-4">I'm a T-shaped engineer,</p>
       <p className="mb-4">
-        {`I'm an ex-solutions architect, having a broad knowledge of technologies and the know-how of applying them in your organization based on sound capacity planning.`}
+        broad—like a full-stack developer or solution architect, able to create
+        complete solutions and deliver value to your organizations; and
+        <br />
+        in-depth—for specific field of interest such as back-end, GIS, and
+        research engineering.
       </p>
+
       <p className="mb-4">
-        {`I can help in any part of IT business process, be it system integrations, application and/or service development, research, process improvements and cost-optimization.
-      I have technical knowledge in the Geographic Information Systems (GIS) and statistics.`}
+        Today, I'm most comfortable with Golang for back-end service
+        development. For data management and research, I am comfortable with
+        Java, Python, C++. For web development, I'm a React/Typescript person.
       </p>
-      <br />
-      <div className="flex overflow-auto my-8 align-middle h-24 items-center">
+      <p className="mb-4">Feel free to contact me via LinkedIn.</p>
+      <div className="flex overflow-auto my-8 align-middle items-center">
         <Certifications />
       </div>
       <br />
@@ -43,6 +51,7 @@ const Certifications = () => {
           alt="esri certified arcgis developer"
           width={75}
           height={75}
+          className="rounded-sm"
         />
       </Link>
       <Link
@@ -55,6 +64,7 @@ const Certifications = () => {
           alt="oracle certified associate"
           width={75}
           height={75}
+          className="rounded-sm"
         />
       </Link>
       <Link
@@ -67,12 +77,13 @@ const Certifications = () => {
           alt="IBM principles of reactive architecture"
           width={75}
           height={75}
+          className="rounded-sm"
         />
       </Link>
       <Link
         href="https://ieeexplore.ieee.org/document/8280674"
         target="_blank"
-        className="flex-none w-24"
+        className="rounded-sm"
       >
         <Image src="/ieee-mb-blue.png" alt="IEEE" width={75} height={75} />
       </Link>
