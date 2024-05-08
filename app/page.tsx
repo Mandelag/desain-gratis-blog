@@ -9,18 +9,13 @@ export default function Page() {
         Hi, I'm Keenan
       </h1>
       <p className="mb-4">
-        I'm a software engineer with more than 5 years of experience maintaining
-        and developing personalization systems and data pipelines.
+        Creative problem solver in software, data, and research engineering.
       </p>
-      <p className="mb-4">I'm a T-shaped engineer,</p>
       <p className="mb-4">
-        broad—like a full-stack developer or solution architect, able to create
-        complete solutions and deliver value to your organizations; and
-        <br />
-        in-depth—for specific field of interest such as back-end, GIS, and
-        research engineering.
+        Professional software engineer with 8+ years of experience, with broad
+        enough skillsets to create values, while maintaining specialty in
+        backend service development and research engineering.
       </p>
-
       <p className="mb-4">
         Today, I'm most comfortable with Golang for back-end service
         development. For data management and research, I am comfortable with
@@ -44,7 +39,7 @@ const Certifications = () => {
       <Link
         href="https://www.credly.com/badges/17f47fb6-e881-44b5-aa3b-da0091706a29"
         target="_blank"
-        className="flex-none w-24"
+        className="rounded-sm p-4"
       >
         <Image
           src="/esri-addc.png"
@@ -57,7 +52,7 @@ const Certifications = () => {
       <Link
         href="https://www.credly.com/badges/6091bf3b-d926-424d-9456-bf977156fa15"
         target="_blank"
-        className="flex-none w-24"
+        className="rounded-sm p-4"
       >
         <Image
           src="/oracle-sa.png"
@@ -70,7 +65,7 @@ const Certifications = () => {
       <Link
         href="https://www.credly.com/badges/a1743b48-bd75-466a-aeca-ff818690d288"
         target="_blank"
-        className="flex-none w-24"
+        className="rounded-sm p-4"
       >
         <Image
           src="/ibm-pora-cc.png"
@@ -83,9 +78,28 @@ const Certifications = () => {
       <Link
         href="https://ieeexplore.ieee.org/document/8280674"
         target="_blank"
-        className="rounded-sm"
+        className="rounded-sm p-4"
       >
         <Image src="/ieee-mb-blue.png" alt="IEEE" width={75} height={75} />
+      </Link>
+      <Link
+        href="https://www.packtpub.com/product/creative-greenfoot-raw/9781783980383"
+        target="_blank"
+        className="rounded-sm p-4"
+      >
+        <Image
+          src="/creative-greenfoot.png"
+          alt="creative greenfoot"
+          width={75}
+          height={75}
+        />
+      </Link>
+      <Link
+        href="https://www.greenfootgallery.org/winners/"
+        target="_blank"
+        className="rounded-sm"
+      >
+        <Image src="/greenfoot.png" alt="greenfoot" width={75} height={75} />
       </Link>
     </>
   );
