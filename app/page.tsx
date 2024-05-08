@@ -21,7 +21,18 @@ export default function Page() {
         development. For data management and research, I am comfortable with
         Java, Python, C++. For web development, I'm a React/Typescript person.
       </p>
-      <p className="mb-4">Feel free to contact me via LinkedIn.</p>
+      <p className="mb-4">
+        Feel free to contact me via{" "}
+        <Link
+          href="https://www.linkedin.com/in/keenan-gebze/"
+          rel="noopener noreferrer"
+          target="_blank"
+          className="underline "
+        >
+          LinkedIn
+        </Link>
+        .
+      </p>
       <div className="flex overflow-auto my-8 align-middle items-center">
         <Certifications />
       </div>
