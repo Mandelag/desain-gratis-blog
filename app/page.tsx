@@ -25,6 +25,15 @@ export default function Page() {
       <div className="flex overflow-auto my-8 align-middle items-center">
         <Certifications />
       </div>
+      <p className="mb-4 text-xs text-slate-400">
+        <b>Ceritifications and achievements</b>, from left-to-right. ArcGIS
+        Developer Certified (2017), Oracle Certified Java 8 Associate (2018),
+        IBM Principles of Reactive Programming certified (2018), Author of IEEE
+        indexed paper, "The positional accuracy of crowdsourced geographic data
+        from open source web GIS" (2017), co-editor of "Creative Greenfoot" book
+        by Michael Haungs (2015), and Winner of "Greenfoot Codepoint 2018" game
+        development contest (2008) category under-16.
+      </p>
       <br />
       <div className="my-8">
         <BlogPosts />
