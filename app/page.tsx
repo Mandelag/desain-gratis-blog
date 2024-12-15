@@ -42,7 +42,7 @@ export default function Page() {
         IBM Principles of Reactive Programming certified (2018), Author of IEEE
         indexed paper, "The positional accuracy of crowdsourced geographic data
         from open source web GIS" (2017), co-editor of "Creative Greenfoot" book
-        by Michael Haungs (2015), and Winner of "Greenfoot Codepoint 2018" game
+        by Michael Haungs (2015), and Winner of "Greenfoot Codepoint 2008" game
         development contest (2008) category under-16.
       </p>
       <br />
