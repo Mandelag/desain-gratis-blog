@@ -1,0 +1,76 @@
+---
+title: "CI/CD Recipe"
+publishedAt: "2025-01-05"
+summary: "Learning containerd"
+---
+
+
+# Managing containerd
+
+- containerd itself (a "runtime") 
+- cni plugin
+- runc (the actual) runtime
+
+
+
+
+# Errors encountered
+
+`d` is an alias for `nerdctl` or `docker` if you want.
+
+
+## Exec failed
+
+When using `redis:alpine` image as `redis` container,
+
+```sh
+nerdctl container exec redis bash
+FATA[0000] OCI runtime exec failed: exec failed: unable to start container process: exec: "bash": executable file not found in $PATH
+```
+If the binary is not installed inside the container.
+
+
+## Creating a executable script inside container, but cannot be run using docker
+
+I have a,
+```sh
+echo "Hello, World!"
+```
+
+That I have created inside a `redis` containre with `redis:alpine` image, in `/data/hello.sh`.
+
+When I tried to execute it, it fails:
+
+```sh
+d container exec redis /data/hello.sh
+
+exec /data/hello.sh: exec format error
+FATA[0000] exec failed with exit code 255
+```
+
+I've solved it by adding
+```sh
+#!/bin/sh
+echo "Hello, World!"
+```
+according to this [link](https://bobcares.com/blog/docker-exec-format-error/).
+
+```sh
+d container exec redis /data/hello.sh
+Hello World!
+```
+There seems to be something hidden variable in the container `exec` command that I can investage further.
+
+
+# Ramblings
+
+1. Zero downtime apabila aplikasi upgrade.
+    - di golang nya handle Shutdown than sigint
+    - kemudian di "depan" ada yang "jagain" TCP/HTTP connection
+    supaya masih bisa terima *VALID* connection (meskipun nambah latensi)
+
+
+Mungkin bisa pakai shell script semacam...
+```sh
+docker exec service update.sh
+```

@@ -1,0 +1,40 @@
+---
+title: "Day to Day Recipe"
+publishedAt: "2025-01-05"
+summary: "Quick look at commond line"
+---
+
+
+# download a file.
+
+```sh
+# Download file
+curl "<url>" -OL
+
+
+# Download file & rename
+curl "url" -o "<new_name>" -L
+```
+
+| flag    | description |
+| -------- | ------- |
+| -o <file_name> | write output with name <file_name>    |
+| -O | write output as the same name     |
+| -L    | follow redirect allowed    |
+
+
+# extract .tar.gz archive
+
+```sh
+tar -xzvf <your archive .tar.gz / .tgz>
+tar -xzvf <your archive .tar.gz / .tgz> -C <output directory>
+```
+
+| flag    | description |
+| -------- | ------- |
+| -x | xtract    |
+| -z | use gzip compression     |
+| -v    | verbose    |
+| -f    | the input file ...    |
+| -C    | the redirect    |
+
