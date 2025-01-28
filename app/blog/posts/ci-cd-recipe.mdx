@@ -5,7 +5,11 @@ summary: "Learning containerd"
 ---
 
 
-# Managing containerd
+# Installing containerd
+
+Can follow the docs [here](https://github.com/containerd/containerd/blob/main/docs/getting-started.md).
+
+Components installed:
 
 - containerd itself (a "runtime") 
 - cni plugin
@@ -13,6 +17,18 @@ summary: "Learning containerd"
 
 
 
+## "Runtime" container
+
+"Build" dockerfile, eg.
+```docker
+1. FROM base image  
+2. RUN Download service archive -- build
+3. ENTRYPOINT from the archive -- runtime
+```
+
+Source [link](https://ynevet.medium.com/docker-build-time-vs-run-time-instructions-ff0d32497298#:~:text=In%20a%20Dockerfile%2C%20there%20are,using%20the%20docker%20build%20command.)
+
+## Install buildkit
 
 # Errors encountered
 
@@ -62,6 +78,26 @@ Hello World!
 There seems to be something hidden variable in the container `exec` command that I can investage further.
 
 
+# Pipeline implementation
+
+
+1. Dicode nya sendiri ditambahin build script yang respect gooenv, kemudian output directory nya respect goos & architecture
+ - jadi entah dia mau buildnya pakai docker or kalau golang bisa langsung, bebas.
+    sekali lagi di build artifactnya akan muncul prefix os/architecturenya juga.
+
+2. Kemudian scp build artifact seperti biasa
+    ke tmp folder dari instance / unified repository
+    mungkin: /tmp/artefact/<service-name>/version-os-arch.tar.gz
+
+3. Kemudian ada Docker build script di suatu folder, yang tugasnya ambil
+    image base, setup2, kemudian copy artifact, kemudian commit artifact tersebut
+    mungkin biar mudah:
+    /tmp/dockerfile/<service-name>/Dockerfile
+
+4. Apabila image nya sudah jadi akan otomatis muncul di docker. 
+
+5. Kemudian pakai compose
+
 # Ramblings
 
 1. Zero downtime apabila aplikasi upgrade.
@@ -74,3 +110,20 @@ Mungkin bisa pakai shell script semacam...
 ```sh
 docker exec service update.sh
 ```
+
+
+
+
+# Installing k3s (a Kubernetes implementation)
+
+Not suitable for me and my usecase, it's not lightweight.
+It causes my small VM to lag.
+
+```sh
+curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--flannel-backend none --container-runtime-endpoint /run/containerd/containerd.sock" sh -s -
+```
+
+- We use `--flannel-backend none` because we already use container network plugin when installing `containerd` separately.
+- We use `--container-runtime-endpoint` because we already installed `containerd`, and that's its existing socket address.
+
+I'm more suitable with containerd & containerd compose.
