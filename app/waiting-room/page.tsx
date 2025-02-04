@@ -65,7 +65,7 @@ export default function App() {
           <pointLight position={[-50, -50, -40]} decay={0.1} intensity={Math.PI} />
           <directionalLight castShadow />
           <Suspense>
-            <Physics gravity={[0, 0, 0]} debug>
+            <Physics gravity={[0, -9.81 * 4, 0]}>
               <WhatDaDawgDoinWorld players={[1]} />
             </Physics>
           </Suspense>
@@ -118,11 +118,9 @@ export default function App() {
   </div >
 }
 
-const SPEED = 8
-const direction = new Vector3()
-const frontVector = new Vector3()
-const sideVector = new Vector3()
-const rotation = new Vector3()
+const SPEED = 24
+const JUMP = 24
+const ROTATE_SPEED = 8
 
 const majuMundur = new Vector3()
 const kanankiri = new Vector3()
@@ -157,34 +155,28 @@ function WhatDaDawgDoinWorld({ players }) {
     const { forward, backward, left, right, jump } = get()
     // const velocity = ref.linvel()
 
-    // movement
-    frontVector.set(0, 0, (backward ? 1 : 0) - (forward ? 1 : 0))
-    sideVector.set((left ? 1 : 0) - (right ? 1 : 0), 0, 0)
-    // direction.subVectors(frontVector, sideVector).normalize().multiplyScalar(SPEED).applyEuler(state.camera.rotation)
-
 
     const rot = ref.rotation()
 
     const q = new Quaternion(rot.x, rot.y, rot.z, rot.w)
-    const v = new Vector3(0, 0, (forward ? 1 : 0) - (backward ? 1 : 0)).multiplyScalar(SPEED).applyQuaternion(q)
-    // three.
-    ref.setLinvel(v, false)
+    kanankiri.set(0, 1, 0).multiplyScalar(ROTATE_SPEED * ((left ? 1 : 0) + (right ? -1 : 0)))
 
-    // console.log(v)
-    // ref.setRotation({ x: rot.x, y: rot.y, z: rot.z, w: W.current }, false)
-    // W.current += 0.1
-    // console.log(rot)
 
-    // ref.setLinvel({ x: majuMundur.x, y: majuMundur.y, z: majuMundur.z }, false)
+    const v = majuMundur.set(0, 0, (forward ? 1 : 0) - (backward ? 1 : 0)).multiplyScalar(SPEED).applyQuaternion(q)
 
-    // console.log(majuMundur)
 
-    // console.log(ref)
-    // ref.translatez(new Vector3(0, 0, 1), false)
-    kanankiri.set(0, 1, 0).multiplyScalar(SPEED * ((left ? 1 : 0) + (right ? -1 : 0)))
     ref.setAngvel({ x: kanankiri.x, y: kanankiri.y, z: kanankiri.z }, false)
 
-    // ref.setAng
+    if (jump && st.grounded) {
+      ref.setLinvel({ x: majuMundur.x, y: majuMundur.y + JUMP, z: majuMundur.z }, false)
+      return
+    }
+
+    if (!st.grounded) {
+      return
+    }
+
+    ref.setLinvel(v, false)
 
     return
   })
@@ -238,10 +230,12 @@ function Platform(props) {
 }
 
 function Dawgg(props) {
-  const { registerRef } = props;
   const { scene: whatdedawgdoin } = useGLTF('/dog.glb')
 
   const ref = useRef<Mesh>(null!)
+  useEffect(() => {
+    whatdedawgdoin.scale.multiplyScalar(3)
+  }, [whatdedawgdoin])
 
   useEffect(() => {
     whatdedawgdoin.traverse(v => v.castShadow = true)
