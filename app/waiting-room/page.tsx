@@ -106,7 +106,7 @@ function Platform(props) {
 }
 
 function Dawgg(props) {
-  const { scene: whatdedawgdoin } = useGLTF('./dog.glb')
+  const { scene: whatdedawgdoin } = useGLTF('/dog.glb')
 
   useEffect(() => {
     whatdedawgdoin.traverse(v => v.castShadow = true)
