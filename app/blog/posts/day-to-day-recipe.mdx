@@ -18,7 +18,7 @@ curl "url" -o "<new_name>" -L
 
 | flag    | description |
 | -------- | ------- |
-| -o <file_name> | write output with name <file_name>    |
+| -o file_name | write output with name file_name    |
 | -O | write output as the same name     |
 | -L    | follow redirect allowed    |
 
@@ -38,3 +38,28 @@ tar -xzvf <your archive .tar.gz / .tgz> -C <output directory>
 | -f    | the input file ...    |
 | -C    | the redirect    |
 
+
+# migrate files to another server / certbot migration 
+
+## archive file and unarchive 
+
+https://community.letsencrypt.org/t/copy-etc-letsencrypt-or-regenerate-to-move/141684/3
+
+```sh
+# in old server
+tar pzcvf /root/moving_le_old_server.tar.gz /etc/letsencrypt/{archive,live,renewal,renewal-hooks}
+
+# in new server
+tar pzxvf /root/moving_le_old_server.tar.gz -C /
+```
+
+## send file
+
+https://superuser.com/questions/98089/sending-file-via-netcat
+
+```sh 
+nc -l -p 1234  > something.zip < /dev/null
+
+# on sender server
+cat something.zip | netcat server.ip.here 1234 -q 0
+```
