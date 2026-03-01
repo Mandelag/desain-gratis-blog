@@ -1,0 +1,47 @@
+---
+title: "I just want to run my binary"
+publishedAt: "2026-03-01"
+summary: "Raft state machine to deploy service accross multiple host"
+---
+
+In my journey of learning [raft library](https://github.com/lni/dragonboat), I decided to create a simple "deployment service" to help me run a compiled binary as a systemd service across multiple hosts. 
+
+Raft managed state-machine is used to track and control the progress of deployment in each host. 
+
+I did it mainly as an exercise, but it's also to help me rapidly iterate/develop and maintain more raft applications as a hobby project. 
+
+(Afterall, who have a DevOps team for their hobby project?) 
+
+*** 
+
+Deployment using SCP and SSH "./app&" simply doesn't scale. 
+
+It starts to get overwhelming when you have multiple hosts to deploy to, multiple services you code, and rapid code changes you push. 
+
+Configuring and fine tuning your own CI/DI, artifact storage, and the orchestrator cluster (Swarm or Kubernetes) would require me to scale a steep learning curve; I don't have the bandwidth for that. 
+
+The same could be said for any cloud or vendor specific solutions. 
+
+Not to mention, they took quite large resources from my 3$/month VMs for the former; and have many unexpected "price toggles" I cannot control for the latter. 
+
+*** 
+
+Most of the front end web development (a static next.js app) was done using GitHub copilot free token. Finished just before the quota was reached. 
+
+Fine tuning was by asking ChatGPT, page by page. 
+
+This web UI can (1) deploy, (2) track my build/commit, and (3) configure env/secret; even from my mobile phone as demonstrated in the video. 
+
+Architecting and back-end implementation was mostly for my human enjoyment, so AI usage was sparse, I just gave the models the API contract, do general consultation, and to implement specific part of the code that will take me time to implement. 
+
+*** 
+
+It is already useful, but not yet production ready. Please only bind it to your private network address (I used Tailscale). 
+
+It can break at times, but I'll continue to improve as my understanding of raft library/distributed systems deepens.
+
+
+
+ 
+
+I hope everyone is safe.
