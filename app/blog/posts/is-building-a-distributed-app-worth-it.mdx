@@ -1,0 +1,148 @@
+--- 
+title: "Is building distributed raft application worth it?"
+publishedAt: "2026-03-20"
+summary: "Discuss trade offs when building a distributed apps"
+--- 
+
+
+Honestly maintaining a raft application is not so straight forward.
+
+I will highlight 3 challenges I've encountered so far: (1) long running connection, (2) throughput, and (3) devops.
+
+_***_ 
+
+Suppose you have a raft cluster with 3 nodes, sit behind a proxy or load balancer.
+
+One hundred percent uptime is hard if the client have a long running connection such as web socket, to one of the node.
+Connection may break and retry/polling mechanism should be in place on the client side.
+
+Using raft, your application will become "stateful" and hold the raft commit log directory.
+
+During deployment,
+You cannot just run multiple instance of your application in a single node and `SO_REUSEADDR` your way like a stateless application.
+
+You need to restart the actual application in each node, one-by-one.
+
+Each, needs to properly manage the traffic drain for both the application and the proxy or load balancer.
+
+During that restart and client got disconnected, if:
+
+ 1. the client retries and reconnects to other node that eventually will be restarted again
+ 2. client get disconnected again
+ 
+Client will obviously have a bad experience.
+
+I'm still trying to make this restart process as smooth as possible.
+
+(eg. maybe need to handle signal to stop long running connection when proxy/load balancer is in the process of draining traffic)
+
+_***_
+
+When receiving new command/message ("write" operation), raft has: 
+
+1. a `commit` stage, in which message is replicated to majority of the nodes safely
+2. an `apply` stage, in which the "state machine" will eventually reads the replicated log, perform its logic, and return its result
+
+When a client send a command/message to the raft cluster, they have the options to:
+
+1. send and forget
+2. send and waits for commit
+3. send and waits for raft apply response
+
+While option 1 and 2 are useful in some cases, 
+I am only interested in option 3, because this is the one who determine the throughput of the whole system.
+
+On my three, `3$` VMs configuration (`1 core`, `1 gb ram`, all in Jakarta); they only support `2~3 RPS` for a "reasonable" tail latencies. 
+Above that, p90 starting to start to go beyond 2s.
+
+Here is a sample k6 load testing result:
+
+```
+constant_qps: 2.00 iterations/s for 30s
+     http_req_duration..............: min=195.38ms med=488.65ms p(90)=551.02ms p(95)=562ms    p(99)=568.97ms p(99.9)=569.65ms max=569.72ms
+
+constant_qps: 3.00 iterations/s for 30s
+     http_req_duration..............: min=215.14ms med=608.75ms p(90)=1.52s    p(95)=1.58s    p(99)=1.68s    p(99.9)=1.69s    max=1.69s   
+
+constant_qps: 5.00 iterations/s for 30s
+     http_req_duration..............: min=173.3ms  med=2.5s     p(90)=4.6s     p(95)=4.84s    p(99)=5.01s    p(99.9)=5.12s    max=5.13s   
+
+constant_qps: 10.00 iterations/s for 30s
+     http_req_duration..............: min=259.15ms med=18.02s   p(90)=23.41s   p(95)=24.27s   p(99)=24.93s   p(99.9)=25.05s   max=25.06s  
+```
+
+
+Since now I how much traffic to "take down" raft write path, I need to protect this write endpoint somehow: 
+
+ - moving validation earlier before entering the raft; 
+ - rate limiting
+ - simple anti-bot fingerprinting mechanism.
+
+Fortunately, validation—especially validation against a raft replicated state—is mostly a read-only operation to a single node that can scale, and it's actually an advantage of raft.
+
+_***_
+
+DevOps-ing a raft application is crazy amount of work. 
+
+I'm working to make this process easier.  There is many things yet to be implemented: 
+
+ - scaling up and down of a raft replica (add/remove non voting member)
+ - upgrade cluster membership
+ - implement replica snapshot
+ - reset replica & state cleanly
+ - healthcheck for raft readiness
+ - and soo many more..
+
+
+_***_
+
+So, is it worth all the pain?
+
+Yes.
+
+Just give me the minimum cost of a distributed databases or message broker available on the cloud.
+
+Is it expensive?
+
+Yes. Very. Discount vouchers only moved the problem elsewhere.
+
+Clickhouse has 199 USD / mo, google cloud sql has 50 USD / mo, not including network etc.. it’s really expensive.
+
+Using raft, I essentially transforming my cheap VMs into both an application server and distributed database.
+
+You can install and treat each database as a local database—a big maintenance win—with additional advantage of distributed read replica.
+
+Your processing logic is also only connect to a local database, which is physically closer to your data—a big performance win for read operation.
+
+This intentional tight-coupling is actually an ideal form of microservice. Having discovered raft library in Golang really opens up many posibilities for this architecture to prosper.
+
+You know, for the longest time, I was idealizing this architecture with Akka cluster with Cassandra database. 
+
+_***_
+
+I've implemented a raft chess game as a showcase for this "idealized" architecture.
+
+Chess is a game that can showcase a state machine splendidly.
+
+Their, if you may, "CQRS" pattern can be easily discerned: 
+
+ - you have the board as the state, 
+ - movement as "command" (eg. moving a rook), 
+ - and you publish "events" (eg. capture) after performing state update
+
+But really, not only chess. 
+The possibilities are endless: 
+
+ - a distributed job scheduler 
+ - a ride-hailing application
+ - an ecommerce purchase engine
+ - etc. 
+
+You know that state machines are prevalent in today's tech landscape, right.
+
+
+I relied on ChatGPT to implement the hard part and its doing really great job at that.
+Maybe because chess game is really popular, and existing implementations are there already; I just need to ask.
+
+Implementation is not perfect; It's a toy and learning project, expect things to be broken as I continue to learn.
+
